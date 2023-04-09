@@ -6,6 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './users/entities/user.entity';
 import { PostModule } from './post/post.module';
 import { PostEntity } from './post/entities/post.entity';
+import { CommentsModule } from './comments/comments.module';
+import { CommentEntity } from './comments/entities/comment.entity';
 
 @Module({
   imports: [
@@ -16,11 +18,12 @@ import { PostEntity } from './post/entities/post.entity';
       username: 'postgres',
       password: 'password',
       database: 'tjournal',
-      entities: [UserEntity, PostEntity],
+      entities: [UserEntity, PostEntity, CommentEntity],
       synchronize: true,
     }),
     UsersModule,
     PostModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
