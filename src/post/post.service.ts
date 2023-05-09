@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostEntity } from './entities/post.entity';
+import { SearchPostDto } from './dto/search-post.dto';
 
 @Injectable()
 export class PostService {
@@ -25,9 +26,9 @@ export class PostService {
   }
 
   async popular() {
-    const qb = this.repository.createQueryBuilder('p');
+    const qb = this.repository.createQueryBuilder();
 
-    qb.addOrderBy('views', 'DESC');
+    qb.orderBy('views', 'DESC');
     qb.limit(10);
 
     const [items, total] = await qb.getManyAndCount();
@@ -38,14 +39,57 @@ export class PostService {
     };
   }
 
-  async findOne(id: number) {
-    const find = await this.repository.findOneBy({ id });
+  async search(dto: SearchPostDto) {
+    const qb = this.repository.createQueryBuilder('p');
 
-    if (!find) {
-      throw new NotFoundException('Статья не найдена');
+    qb.limit(dto.limit || 0);
+    qb.take(dto.take || 10);
+
+    if (dto.views) {
+      qb.orderBy('views', dto.views);
     }
 
-    return find;
+    if (dto.title) {
+      qb.andWhere(`p.title ILIKE :title`);
+    }
+
+    if (dto.body) {
+      qb.andWhere(`p.body ILIKE :body`);
+    }
+
+    if (dto.tags) {
+      qb.andWhere(`p.tags ILIKE :tags`);
+    }
+
+    qb.setParameters({
+      title: `%${dto.title}%`,
+      body: `%${dto.body}%`,
+      tags: `%${dto.tags}%`,
+      views: dto.views || '',
+    });
+
+    console.log(qb.getSql());
+
+    const [items, total] = await qb.getManyAndCount();
+
+    return { items, total };
+  }
+
+  async findOne(id: number) {
+    await this.repository
+      .createQueryBuilder('posts')
+      .whereInIds(id)
+      .update()
+      .set({ views: () => 'views + 1' })
+      .execute();
+
+    // const find = await this.repository.findOneBy({ id });
+
+    // if (!find) {
+    //   throw new NotFoundException('Статья не найдена');
+    // }
+
+    // return find;
   }
 
   async update(id: number, updatePostDto: UpdatePostDto) {
