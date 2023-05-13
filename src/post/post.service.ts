@@ -83,7 +83,7 @@ export class PostService {
       .set({ views: () => 'views + 1' })
       .execute();
 
-    // const find = await this.repository.findOneBy({ id });
+    return this.repository.findOneBy({ id });
 
     // if (!find) {
     //   throw new NotFoundException('Статья не найдена');
