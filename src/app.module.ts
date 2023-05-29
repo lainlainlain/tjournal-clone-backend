@@ -9,6 +9,7 @@ import { PostEntity } from './post/entities/post.entity';
 import { CommentsModule } from './comments/comments.module';
 import { CommentEntity } from './comments/entities/comment.entity';
 import { AuthModule } from './auth/auth.module';
+import { IsUniqueConstraint } from './auth/validations/UniqueValidation';
 
 @Module({
   imports: [
@@ -28,6 +29,6 @@ import { AuthModule } from './auth/auth.module';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, IsUniqueConstraint],
 })
 export class AppModule {}
