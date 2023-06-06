@@ -13,10 +13,6 @@ export class PostService {
     private repository: Repository<PostEntity>,
   ) {}
 
-  create(createPostDto: CreatePostDto) {
-    return this.repository.save(createPostDto);
-  }
-
   findAll() {
     return this.repository.find({
       order: {
@@ -92,21 +88,48 @@ export class PostService {
     // return find;
   }
 
-  async update(id: number, updatePostDto: UpdatePostDto) {
+  create(dto: CreatePostDto, userId: number) {
+    const firstParagraph = dto.body.find((obj) => obj.type === 'paragraph')
+      ?.data?.text;
+    return this.repository.save({
+      title: dto.title,
+      body: dto.body,
+      tags: dto.tags,
+      user: {
+        id: userId,
+      },
+      description: firstParagraph || '',
+    });
+  }
+
+  async update(id: number, dto: UpdatePostDto, userId: number) {
     const find = await this.repository.findOneBy({ id });
 
     if (!find) {
       throw new NotFoundException('Статья не найдена');
     }
 
-    return this.repository.update(id, updatePostDto);
+    const firstParagraph = dto.body.find((obj) => obj.type === 'paragraph')
+      ?.data?.text;
+
+    return this.repository.update(id, {
+      title: dto.title,
+      body: dto.body,
+      tags: dto.tags,
+      user: { id: userId },
+      description: firstParagraph || '',
+    });
   }
 
-  async remove(id: number) {
+  async remove(id: number, userId: number) {
     const find = await this.repository.findOneBy({ id });
 
     if (!find) {
       throw new NotFoundException('Статья не найдена');
+    }
+
+    if (find.user.id !== userId) {
+      throw new NotFoundException('Нет доступа к этой статье');
     }
 
     return this.repository.delete(id);
