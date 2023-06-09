@@ -45,12 +45,12 @@ export class PostService {
       qb.orderBy('views', dto.views);
     }
 
-    if (dto.title) {
-      qb.andWhere(`p.title ILIKE :title`);
-    }
-
     if (dto.body) {
       qb.andWhere(`p.body ILIKE :body`);
+    }
+
+    if (dto.title) {
+      qb.andWhere(`p.title ILIKE :title`);
     }
 
     if (dto.tags) {
@@ -63,8 +63,6 @@ export class PostService {
       tags: `%${dto.tags}%`,
       views: dto.views || '',
     });
-
-    console.log(qb.getSql());
 
     const [items, total] = await qb.getManyAndCount();
 
