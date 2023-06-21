@@ -52,8 +52,17 @@ export class CommentsService {
     return this.repository.findOneBy({ id });
   }
 
-  update(id: number, updateCommentDto: UpdateCommentDto) {
-    return this.repository.update(id, updateCommentDto);
+  async update(id: number, updateCommentDto: UpdateCommentDto) {
+    await this.repository
+      .createQueryBuilder()
+      .update(updateCommentDto)
+      .where('id = :id', { id })
+      .execute();
+
+    return this.repository.findOne({
+      where: { id },
+      relations: ['user'],
+    });
   }
 
   remove(id: number) {
